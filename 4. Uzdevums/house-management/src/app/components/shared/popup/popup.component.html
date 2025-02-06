@@ -1,0 +1,11 @@
+<div class='blur'>
+    <div class="popup-container rounded overflow-scroll" [ngStyle]="{'max-width': maxWidth}">
+        <div class="popup-header">
+          <h1 class="lead m-1">{{ title }}</h1>
+          <ng-content select="[nav]"></ng-content>
+        </div>
+        <div class="p-3">
+          <ng-content></ng-content>
+        </div>
+    </div>
+</div>

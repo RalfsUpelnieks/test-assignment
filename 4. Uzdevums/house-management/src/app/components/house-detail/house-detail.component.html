@@ -1,0 +1,117 @@
+<div class="container">
+    <div class="h5 py-1">
+        <a routerLink="/all-houses" class="text-decoration-none">All houses</a><span> / </span><span class="text-secondary">House details</span>
+    </div>
+    <div class="row gap-1 px-2 align-items-start">
+        <div class="card col-12 col-xl-4 px-4 py-3">
+            <div class="d-flex justify-content-between align-content-end">
+                <h2 class="lead">House details</h2>
+                <h6 class="">House ID: {{ hosueId }}</h6>
+            </div>
+            <form [formGroup]="editHouseForm" (ngSubmit)="onHouseEdit()">
+                <p *ngIf="editHouseMessage" [ngClass]="editHouseMessageIsPositive ? 'text-success' : 'text-danger'">{{ editHouseMessage }}</p>
+                <div class="row g-3">
+                    <div class="col-xxl-4">
+                        <label for="number" class="col-form-label">Number</label>
+                        <input type="text" id="number" class="form-control" formControlName="number">
+                    </div>
+                    <div class="col-xxl-8">
+                        <label for="street" class="col-form-label">Street</label>
+                        <input type="text" id="street" class="form-control" formControlName="street">
+                    </div>
+                    <div class="col-xxl-6">
+                        <label for="city" class="col-form-label">City</label>
+                        <input type="text" id="city" class="form-control" formControlName="city">
+                    </div>
+                    <div class="col-xxl-6">
+                        <label for="country" class="col-form-label">Country</label>
+                        <input type="text" id="country" class="form-control" formControlName="country">
+                    </div>
+                    <div class="col-xxl-4">
+                        <label for="postalCode" class="col-form-label">Postal code</label>
+                        <input type="text" id="postalCode" class="form-control" formControlName="postalCode">
+                    </div>
+                    <div class="col-xxl-8 d-flex justify-content-end align-items-end">
+                        <button class="btn btn-danger me-2" style="max-height: 2.5rem;" type="button" (click)="confirmHouseDeletion()" [disabled]="editHouseIsLoading">Delete house</button>
+                        <button class="btn btn-warning" style="max-height: 2.5rem; width: 4rem;" type="submit" [disabled]="editHouseIsLoading">
+                            <span *ngIf="editHouseIsLoading; else saveChangesText" class="spinner-border spinner-border-sm"></span>
+                            <ng-template #saveChangesText>Save</ng-template>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="card col-12 col-xl-7 p-0 overflow-scroll">
+            <div class="d-flex justify-content-between">
+                <h2 class="lead mx-2 my-1">House apartments</h2>
+                <button class="btn btn-warning btn-sm m-1" (click)="showAddApartment()">Add new apartment</button>
+            </div>
+            <table class="table m-0">
+                <thead>
+                    <tr>
+                        <th scope="col">ID</th>
+                        <th scope="col">Number</th>
+                        <th scope="col">Floor</th>
+                        <th scope="col">Room count</th>
+                        <th scope="col">Resident count</th>
+                        <th scope="col">Total area</th>
+                        <th scope="col">Living area</th>
+                        <th scope="col">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let apartment of house?.apartments">
+                        <td scope="row">{{ apartment.apartmentId }}</td>
+                        <td>{{ apartment.number }}</td>
+                        <td>{{ apartment.floor }}</td>
+                        <td>{{ apartment.roomCount }}</td>
+                        <td>{{ apartment.residentCount }}</td>
+                        <td>{{ apartment.totalArea }}</td>
+                        <td>{{ apartment.livingArea }}</td>
+                        <td class="text-center" style="width: 11rem;">
+                            <a class="btn btn-primary mx-1" [routerLink]="['/apartment', apartment.apartmentId]">Details</a>
+                            <a class="btn btn-danger" (click)="confirmApartmentDeletion(apartment.apartmentId)">Delete</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<app-popup *ngIf="addApartmentIsVisible" title="Add a new apartment">
+    <form [formGroup]="addApartmentForm" (ngSubmit)="onApartmentAdd()">
+        <p *ngIf="addApartmentErrorMessage" class="text-danger">{{ addApartmentErrorMessage }}</p>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label for="number" class="col-form-label">Number</label>
+                <input type="text" id="number" class="form-control" formControlName="number">
+            </div>
+            <div class="col-md-4">
+                <label for="floor" class="col-form-label">Floor</label>
+                <input type="number" min="0" id="floor" class="form-control" formControlName="floor" numbersOnly>
+            </div>
+            <div class="col-md-4">
+                <label for="roomCount" class="col-form-label">Room count</label>
+                <input type="number" min="0" id="roomCount" class="form-control" formControlName="roomCount" numbersOnly>
+            </div>
+            <div class="col-md-4">
+                <label for="totalArea" class="col-form-label">Total area</label>
+                <input type="number" min="0" id="totalArea" class="form-control" formControlName="totalArea" numbersOnly>
+            </div>
+            <div class="col-md-4">
+                <label for="livingArea" class="col-form-label">Living area</label>
+                <input type="number" min="0" id="livingArea" class="form-control" formControlName="livingArea" numbersOnly>
+            </div>
+            <div class="col-md-4 d-flex justify-content-end align-items-end">
+                <button class="btn btn-primary me-2" style="max-height: 2.5rem;" type="button" (click)="closeAddApartment()" [disabled]="addApartmentIsLoading">Close</button>
+                <button class="btn btn-warning" style="max-height: 2.5rem; width: 4rem;" type="submit" [disabled]="addApartmentIsLoading">
+                    <span *ngIf="addApartmentIsLoading; else addText" class="spinner-border spinner-border-sm"></span>
+                    <ng-template #addText>Add</ng-template>
+                </button>
+            </div>
+        </div>
+    </form>
+</app-popup>
+
+<app-deletion-confirmation title="Delete" item="this item"></app-deletion-confirmation>

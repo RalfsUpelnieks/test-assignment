@@ -1,0 +1,10 @@
+<app-popup *ngIf="isVisible" [title]="title">
+    <div>
+        <h5>Are you sure you want to delete {{ item }}?</h5>
+        <h6>Item will be permanently deleted. This action is not reversible.</h6>
+        <div class="d-flex justify-content-end align-items-end">
+            <button class="btn btn-primary me-2" style="max-height: 2.5rem;" (click)="close()">Close</button>
+            <button class="btn btn-danger" style="max-height: 2.5rem;" (click)="confirmDelete()">Delete</button>
+        </div>
+    </div>
+</app-popup>

@@ -1,0 +1,217 @@
+<div class="container">
+    <div class="h5 py-1">
+        <a routerLink="/all-houses" class="text-decoration-none">All houses</a><span> / </span><a [routerLink]="['/house', apartment?.houseId]" class="text-decoration-none">House details</a><span> / </span><span class="text-secondary">Apartment details</span>
+    </div>
+    <div class="card d-flex px-4 py-3 mb-1">
+        <div class="d-flex justify-content-between align-content-end">
+            <h2 class="lead">Apartment details</h2>
+            <h6 class="">Apartment ID: {{ apartmentId }}</h6>
+        </div>
+        <form [formGroup]="editApartmentForm" (ngSubmit)="onApartmentEdit()">
+            <p *ngIf="editApartmentMessage" [ngClass]="editApartmentMessageIsPositive ? 'text-success' : 'text-danger'" class="mb-0">{{ editApartmentMessage }}</p>
+            <div class="row g-3">
+                <div class="col-xxl-2 col-xl-4 col-6">
+                    <label for="number" class="col-form-label">Number</label>
+                    <input type="text" id="number" class="form-control" formControlName="number">
+                </div>
+                <div class="col-xxl-1 col-xl-4 col-6">
+                    <label for="floor" class="col-form-label">Floor</label>
+                    <input type="text" id="floor" class="form-control" formControlName="floor">
+                </div>
+                <div class="col-xxl-1 col-xl-4 col-6">
+                    <label for="roomCount" class="col-form-label">Rooms</label>
+                    <input type="text" id="roomCount" class="form-control" formControlName="roomCount">
+                </div>
+                <div class="col-xxl-2 col-xl-4 col-6">
+                    <label for="totalArea" class="col-form-label">Total Area</label>
+                    <input type="text" id="totalArea" class="form-control" formControlName="totalArea">
+                </div>
+                <div class="col-xxl-2 col-xl-4 col-6">
+                    <label for="livingArea" class="col-form-label">Living Area</label>
+                    <input type="text" id="livingArea" class="form-control" formControlName="livingArea">
+                </div>
+                <div class="col-xl-4 col-md-6 col-12 d-flex justify-content-end align-items-end">
+                    <button class="btn btn-danger me-2" style="max-height: 2.5rem;" type="button" (click)="confirmApartmentDeletion()" [disabled]="editApartmentIsLoading">Delete apartment</button>
+                    <button class="btn btn-warning" style="max-height: 2.5rem; width: 4 rem;" type="submit" [disabled]="editApartmentIsLoading">
+                        <span *ngIf="editApartmentIsLoading; else saveChangesText" class="spinner-border spinner-border-sm"></span>
+                        <ng-template #saveChangesText>Save</ng-template>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="card p-0 overflow-scroll">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="lead mx-2 my-1">Residents</h2>
+            <p class="h6">Resident count: {{ apartment?.residentCount }}</p>
+            <button class="btn btn-warning btn-sm m-1" (click)="showAllResidents()">Edit residents</button>
+        </div>
+        <table class="table m-0">
+            <thead>
+                <tr>
+                    <th scope="col">ID</th>
+                    <th scope="col">First Name</th>
+                    <th scope="col">Last Name</th>
+                    <th scope="col">Personal Code</th>
+                    <th scope="col">Birth Date</th>
+                    <th scope="col">Phone</th>
+                    <th scope="col">Email</th>
+                    <th class="text-center" scope="col">Owner</th>
+                    <th scope="col">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let resident of apartment?.residents">
+                    <td scope="row">{{ resident.residentId }}</td>
+                    <td>{{ resident.firstName }}</td>
+                    <td>{{ resident.lastName }}</td>
+                    <td>{{ resident.personalCode }}</td>
+                    <td>{{ resident.birthDate | date:'dd/MM/yyyy' }}</td>
+                    <td>{{ resident.phone }}</td>
+                    <td>{{ resident.email }}</td>
+                    <td class="text-center align-middle"><input class="form-check-input" type="radio" (click)="toggleOwner($event, resident.residentId)" [checked]="resident.residentId === apartment?.ownerResidentId"></td>
+                    <td class="text-center" style="width: 12rem;">
+                        <a class="btn btn-primary mx-1" (click)="showResidentDetails(resident.residentId)">Details</a>
+                        <a class="btn btn-danger" (click)="onResidentApartmentDelete(resident.residentId)">Remove</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<app-popup *ngIf="visibleMenu === MENU_ALL_RESIDENTS" title="All resident list" maxWidth="60rem">
+    <div nav>
+        <button nav class="btn btn-warning btn-sm m-1" (click)="showAddResident()">Add new resident</button>
+        <button nav class="btn btn-primary btn-sm m-1" (click)="closeMenu()">Close</button>
+    </div>
+    
+    <table class="table m-0">
+        <thead>
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">First Name</th>
+                <th scope="col">Last Name</th>
+                <th scope="col">Personal Code</th>
+                <th scope="col">Birth Date</th>
+                <th scope="col">Phone</th>
+                <th scope="col">Email</th>
+                <th scope="col">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let resident of allResidents">
+                <td scope="row">{{ resident.residentId }}</td>
+                <td>{{ resident.firstName }}</td>
+                <td>{{ resident.lastName }}</td>
+                <td>{{ resident.personalCode }}</td>
+                <td>{{ resident.birthDate | date:'dd/MM/yyyy' }}</td>
+                <td>{{ resident.phone }}</td>
+                <td>{{ resident.email }}</td>
+                <td class="text-start" style="width: 12rem;">
+                    <a class="btn btn-primary mx-1" (click)="showResidentDetails(resident.residentId)">Details</a>
+                    <a *ngIf="!isResidentOfApartment(resident.residentId); else removeButton" class="btn btn-warning" (click)="onResidentApartmentAdd(resident.residentId)">Add</a>
+                    <ng-template #removeButton><a class="btn btn-danger" (click)="onResidentApartmentDelete(resident.residentId)">Remove</a></ng-template>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</app-popup>
+
+<app-popup *ngIf="visibleMenu === MENU_ADD_RESIDENT" title="Add a new resident">
+    <div nav>
+        <button nav class="btn btn-primary btn-sm m-1" (click)="showAllResidents()">All residents</button>
+        <button nav class="btn btn-primary btn-sm m-1" (click)="closeMenu()">Close</button>
+    </div>
+    <form [formGroup]="addResidentForm" (ngSubmit)="onResidentAdd()">
+        <p *ngIf="addResidentErrorMessage" class="text-danger">{{ addResidentErrorMessage }}</p>
+        <div class="row g-3">
+            <div class="col-6">
+                <label for="firstName" class="col-form-label">First name</label>
+                <input type="text" id="firstName" class="form-control" formControlName="firstName">
+            </div>
+            <div class="col-6">
+                <label for="lastName" class="col-form-label">Last name</label>
+                <input type="text" id="lastName" class="form-control" formControlName="lastName">
+            </div>
+            <div class="col-6">
+                <label for="personalCode" class="col-form-label">Personal code</label>
+                <input type="text" id="personalCode" class="form-control" formControlName="personalCode">
+            </div>
+            <div class="col-6">
+                <label for="birthDate" class="col-form-label">Birth date</label>
+                <input type="date" id="birthDate" class="form-control" formControlName="birthDate">
+            </div>
+            <div class="col-12">
+                <label for="phone" class="col-form-label">Phone</label>
+                <input type="text" id="phone" class="form-control" formControlName="phone">
+            </div>
+            <div class="col-12">
+                <label for="email" class="col-form-label">Email</label>
+                <input type="email" id="email" class="form-control" formControlName="email">
+            </div>
+
+            <div class="col-12 d-flex justify-content-end align-items-end">
+                <button class="btn btn-danger me-2" style="max-height: 2.5rem;" type="button" (click)="confirmApartmentDeletion()" [disabled]="addResidentIsLoading">Delete apartment</button>
+                <button class="btn btn-warning" style="max-height: 2.5rem; width: 4rem;" type="submit" [disabled]="addResidentIsLoading">
+                    <span *ngIf="addResidentIsLoading; else saveChangesText" class="spinner-border spinner-border-sm"></span>
+                    <ng-template #saveChangesText>Add</ng-template>
+                </button>
+            </div>
+        </div>
+    </form>
+</app-popup>
+
+<app-popup *ngIf="visibleMenu === MENU_RESIDENT_DETAILS" title="Resident details">
+    <div nav>
+        <button nav class="btn btn-primary btn-sm m-1" (click)="showAllResidents()">All residents</button>
+        <button nav class="btn btn-primary btn-sm m-1" (click)="closeMenu()">Close</button>
+    </div>
+    <form [formGroup]="editResidentForm" (ngSubmit)="onResidentEdit()">
+        <div class="col-12 h5">Resident ID: {{ residentDetails!.residentId }}</div>
+        <p *ngIf="editResidentMessage" class="text-danger">{{ editResidentMessage }}</p>
+        <div class="row g-3">
+            <div class="col-6">
+                <label for="firstName" class="col-form-label">First name</label>
+                <input type="text" id="firstName" class="form-control" formControlName="firstName">
+            </div>
+            <div class="col-6">
+                <label for="lastName" class="col-form-label">Last name</label>
+                <input type="text" id="lastName" class="form-control" formControlName="lastName">
+            </div>
+            <div class="col-6">
+                <label for="personalCode" class="col-form-label">Personal code</label>
+                <input type="text" id="personalCode" class="form-control" formControlName="personalCode">
+            </div>
+            <div class="col-6">
+                <label for="birthDate" class="col-form-label">Birth date</label>
+                <input type="date" id="birthDate" class="form-control" formControlName="birthDate">
+            </div>
+            <div class="col-12">
+                <label for="phone" class="col-form-label">Phone</label>
+                <input type="text" id="phone" class="form-control" formControlName="phone">
+            </div>
+            <div class="col-12">
+                <label for="email" class="col-form-label">Email</label>
+                <input type="email" id="email" class="form-control" formControlName="email">
+            </div>
+
+            <div class="col-12">
+                <div class="h5">Resident apartments</div>
+                <div class="row gap-3 px-3">
+                    <button *ngFor="let apartment of residentDetails!.apartments" class="btn btn-primary col-2" type="button" [routerLink]="['/apartment', apartment.apartmentId]" [disabled]="apartmentId === apartment.apartmentId">{{ apartment.apartmentId }}</button>
+                </div>
+            </div>
+
+            <div class="col-12 d-flex justify-content-between align-items-end">
+                <button class="btn btn-danger me-2" style="max-height: 2.5rem;" type="button" (click)="confirmResidentDeletion()" [disabled]="editResidentIsLoading">Delete resident</button>
+                <button class="btn btn-warning" style="max-height: 2.5rem; width: 4rem;" type="submit" [disabled]="editResidentIsLoading">
+                    <span *ngIf="editResidentIsLoading; else saveChangesText" class="spinner-border spinner-border-sm"></span>
+                    <ng-template #saveChangesText>save</ng-template>
+                </button>
+            </div>
+        </div>
+    </form>
+</app-popup>
+
+<app-deletion-confirmation title="Delete" item="this item"></app-deletion-confirmation>
